@@ -1,27 +1,30 @@
-def bin_search(x, l, left=None, right=None, first=None):
+def bin_search(x, l, left=None):
     if left is None:
         left = 0
-    if right is None:
-        right = len(l)
+    right = len(l) - 1
+    index = None
+    middle = -1
+    while middle != (left + right) // 2:
+        middle = (left + right) // 2
 
-    if right <= left:
-        if first:
-            return first, -1
-        return -1, -1
+        if x <= l[middle]:
+            index = middle
+            right = middle
+        else:
+            left = middle + 1
 
-    middle = (left + right) // 2
-
-    if x <= l[middle]:
-        if first:
-            return first, middle
-        return bin_search(x * 2, l, middle + 1, right, middle)
-
-    if x > l[middle]:
-        return bin_search(x, l, left, middle, first)
+    return index
 
 
 if __name__ == '__main__':
     input()
     l = list(map(int, input().split()))
     price = int(input())
-    print(*bin_search(price, l))
+    first = bin_search(price, l)
+
+    if first is not None:
+        second = bin_search(price * 2, l, first)
+    else:
+        second = None
+    print(str(-1 if first is None else first + 1), end=' ')
+    print(str(-1 if second is None else second + 1))
