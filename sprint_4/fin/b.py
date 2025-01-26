@@ -1,4 +1,4 @@
-# https://contest.yandex.ru/contest/24414/run-report/132200277/
+# https://contest.yandex.ru/contest/24414/run-report/132270843/
 """
 -- ПРИНЦИП РАБОТЫ --
 1) Читаем данные
@@ -22,9 +22,11 @@ import math
 
 
 class HashTable:
-    def __init__(self, p):
+    def __init__(self, n):
         self._s = 2654435769
         self._d = 2 ** 32
+        # Ниже считаем кол-во корзин, так как должна быть степень двойки
+        p = int(math.log(n, 2))
         self._p = p
         self._m = 2 ** p
         self._table = [[] for _ in range(self._m)]
@@ -66,9 +68,8 @@ class HashTable:
 
 if __name__ == '__main__':
     n = int(input())
-    # Ниже считаем кол-во корзин, так как должна быть степень двойки
     # Предполагаем что количество значений около половины команд
-    hash_tab = HashTable(int(math.log(n / 2, 2)))
+    hash_tab = HashTable(n/2)
     for _ in range(n):
         command_name, *args_str = input().split()
         args = [int(arg) for arg in args_str]
