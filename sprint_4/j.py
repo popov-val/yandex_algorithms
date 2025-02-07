@@ -1,23 +1,35 @@
-def main(a, b):
-    min_l, max_l = (a, b) if len(a) <= len(b) else (b, a)
-    max_cnt = 0
-    for i in range(len(min_l)):
-        m = 0
-        for j in range(len(max_l)):
-            for k in range(1, len(min_l) - i + 1):
-                if min_l[i: i + k] == max_l[j:j + k]:
-                    m += 1
-                else:
-                    break
-            max_cnt = max(max_cnt, m)
-            m = 0
-    return max_cnt
+def main(a):
+    # res = {el: [] for el in a}
+    res = {}
+    next_ = []
+    for el in a:
+        if not res:
+            res[el] = next_
+        else:
+            new_next = []
+            next_.append({el: new_next})
+            next_ = new_next
+            if res.get(el):
+                pass
+            else:
+                res[el] = next_
+
+    return res
 
 
 if __name__ == '__main__':
-    input()
-    a = list(map(int, input().split()))
-    input()
-    b = list(map(int, input().split()))
+    # input()
+    # a = list(map(int, input().split()))
+    # input()
+    # b = list(map(int, input().split()))
 
-    print(main(a, b))
+    a = [1, 1, 2, 3]
+
+    print(main(a))
+
+a = [1, 2, 3]
+stuct = {
+    1: [{2: [{3: []}]}, {1: [{2: [{3: []}]}]}],
+    2: [{3: []}],
+    3: []
+}
