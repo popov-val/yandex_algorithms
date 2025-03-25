@@ -1,53 +1,84 @@
-def get_plate():
-    n, _ = list(map(int, input().split()))
-    return [input() for _ in range(n)]
+from collections import deque
+from line_profiler import profile
 
 
-def process_neighbours(graph, plate, i, j, n, m):
-    for shift in range(-1, 2, 2):
-        if 0 <= j + shift < m and plate[i][j + shift] == '#':
-            graph[(i, j)].append((i, j + shift))
-        if 0 <= i + shift < n and plate[i + shift][j] == '#':
-            graph[(i, j)].append((i + shift, j))
-
-
-def get_graph(plate):
-    graph = {}
-    n = len(plate)
+@profile
+def get_number_plate(f, n, graph):
+    empty_row = None
+    yield empty_row
+    vers_cnt = 0
     for i in range(n):
-        m = len(plate[i])
-        for j in range(m):
-            if plate[i][j] == '#':
-                graph[(i, j)] = []
-                process_neighbours(graph, plate, i, j, n, m)
+        row = []
+        for s in f.readline():
+            if s == '#':
+                vers_cnt += 1
+                row.append(vers_cnt)
+                graph.append([])
+            else:
+                row.append(s)
+        yield row
+    yield None
+
+
+@profile
+def add_to_graph(plate, graph, m):
+    for i in range(m):
+        point = plate[1][i]
+        if point == '.':
+            continue
+
+        for shift in range(-1, 2, 2):
+            if 0 <= i + shift < m and plate[1][i + shift] != '.':
+                graph[point].append(plate[1][i + shift])
+            if plate[1 + shift] and plate[1 + shift][i] != '.':
+                graph[point].append(plate[1 + shift][i])
+
+
+@profile
+def get_graph(f):
+    n, m = list(map(int, f.readline().split()))
+    plate = deque()
+    graph = [None]
+    next_plate = get_number_plate(f, n, graph)
+    plate.append(next(next_plate))
+    plate.append(next(next_plate))
+    i = n
+    while i:
+        i -= 1
+        plate.append(next(next_plate))
+        add_to_graph(plate, graph, m)
+        plate.popleft()
 
     return graph
 
 
+@profile
 def get_metrics(graph):
-    visited = set()
+    visited = [False for _ in range(len(graph))]
     max_color = 0
     max_cnt = 0
-    for v in graph.keys():
-        if v in visited:
+    for v in range(1, len(graph)):
+        if visited[v]:
             continue
         cnt = 0
         max_color += 1
         for_color = [v]
         while for_color:
             u = for_color.pop()
-            if u not in visited:
-                visited.add(u)
-                cnt += 1
-                for_color.extend(graph[u])
+            if visited[u]:
+                continue
+            visited[u] = True
+            cnt += 1
+            for_color.extend(graph[u])
         max_cnt = max(cnt, max_cnt)
 
     return max_color, max_cnt
 
 
+@profile
 def main():
-    plate = get_plate()
-    graph = get_graph(plate)
+    with open('data/input.txt') as f:
+        graph = get_graph(f)
     metrics = get_metrics(graph)
     print(*metrics)
 
