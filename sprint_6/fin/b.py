@@ -1,70 +1,42 @@
 from collections import deque
 
 
-def get_number_plate(n):
-    empty_row = None
-    yield empty_row
-    for i in range(n):
-        yield input()
-    yield empty_row
-
-
-def add_to_graph(plate, graph, m, num_row):
-    for i in range(m):
-        if plate[1][i] == '.':
-            continue
-        graph[(num_row, i)] = []
-        for shift in range(-1, 2, 2):
-            if 0 <= i + shift < m and plate[1][i + shift] != '.':
-                graph[(num_row, i)].append((num_row, i + shift))
-            if plate[1 + shift] and plate[1 + shift][i] != '.':
-                graph[(num_row, i)].append((num_row + shift, i))
-
-
-def get_graph():
-    n, m = list(map(int, input().split()))
-    plate = deque()
-    graph = {}
-    next_plate = get_number_plate(n)
-    plate.append(next(next_plate))
-    plate.append(next(next_plate))
-    num_row = 0
-    while num_row != n:
-        num_row += 1
-        plate.append(next(next_plate))
-        add_to_graph(plate, graph, m, num_row)
-        plate.popleft()
-
-    return graph
-
-
-def get_metrics(graph):
-    visited = set()
-    max_color = 0
-    max_cnt = 0
-    for v in graph.keys():
-        if v in visited:
-            continue
-        cnt = 0
-        max_color += 1
-        for_color = [v]
-        while for_color:
-            u = for_color.pop()
-            if u in visited:
-                continue
-            visited.add(u)
-            cnt += 1
-            for_color.extend(graph[u])
-        max_cnt = max(cnt, max_cnt)
-
-    return max_color, max_cnt
-
-
 def main():
-    graph = get_graph()
-    metrics = get_metrics(graph)
-    print(*metrics)
+    cnt = 0
+    max_size = 0
+    n, m = list(map(int, input().split()))
+    shifts = [(0, 1), (0, -1), (1, 0), (-1, 0)]
+    plate = [input() for _ in range(n)]
+    d = deque()
+    nums = n * m
+    vers = set(range(nums))
+    while vers:
+        k = vers.pop()
+        i = k // m
+        j = k % m
+        if plate[i][j] == '.':
+            continue
+
+        d.append((i, j))
+        cnt += 1
+        size = 0
+        while d:
+            i, j = d.popleft()
+            size += 1
+            for shift_i, shift_j in shifts:
+                i_neib, j_neib = i + shift_i, j + shift_j
+                if 0 > i_neib or i_neib >= n or 0 > j_neib or j_neib >= m:
+                    continue
+                neib = i_neib * m + j_neib
+                if neib not in vers:
+                    continue
+                vers.remove(neib)
+                if plate[i_neib][j_neib] == '#':
+                    d.append((i_neib, j_neib))
+
+        max_size = max(size, max_size)
+    return cnt, max_size
 
 
 if __name__ == '__main__':
-    main()
+    print(*main())
