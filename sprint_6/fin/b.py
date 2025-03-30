@@ -13,6 +13,10 @@ j = num % m
 где num номер точки из таблицы
 Таким образом смещение можно считать добавлением 1 для соседей справа(слева) и m для соседей сверху(снизу)
 
+К сожалению, у меня решение близкое к сохранению координат не прошло:
+https://contest.yandex.ru/contest/25070/run-report/135648078/
+
+
 1) Читаем данные и подготавливаем структуры:
     - cnt счетчик земли
     - max_size максимальный размер земли
@@ -41,10 +45,36 @@ j = num % m
 O(N*M) - на каждую точку, так как если точна уже посещена мы двигали рассматриваемую вершину
 
 -- ПРОСТРАНСТВЕННАЯ СЛОЖНОСТЬ --
-O(N) на массив с флагами о посещениях
+O(N*M) на массив с флагами о посещениях
 """
 
 from collections import deque
+
+
+def process_neighbors(next_v, visited, shifts, nums, m, plate):
+    d = deque()
+    d.append(next_v)
+    visited[next_v] = True
+    next_v += 1
+    size = 0
+    while d:
+        num = d.popleft()
+        size += 1
+        for shift in shifts:
+            neib = num + shift
+            # Проверка на наличие соседа
+            if neib < 0 or neib >= nums:
+                continue
+            # Проверям что сосед справа/слева находится на той же строке
+            if shift in [-1, 1] and neib // m != num // m:
+                continue
+            if visited[neib]:
+                continue
+            visited[neib] = True
+            next_v += next_v == neib
+            if plate[neib // m][neib % m] == '#':
+                d.append(neib)
+    return size, next_v
 
 
 def main():
@@ -53,7 +83,6 @@ def main():
     n, m = list(map(int, input().split()))
     shifts = [1, -1, m, -m]
     plate = [input() for _ in range(n)]
-    d = deque()
     nums = n * m
     visited = [False for _ in range(nums)]
     next_v = 0
@@ -68,28 +97,8 @@ def main():
             next_v += 1
             continue
 
-        visited[next_v] = True
-        d.append(next_v)
-        next_v += 1
         cnt += 1
-        size = 0
-        while d:
-            num = d.popleft()
-            size += 1
-            for shift in shifts:
-                neib = num + shift
-                # Проверка на наличие соседа
-                if neib < 0 or neib >= nums:
-                    continue
-                # Проверям что сосед справа/слева находится на той же строке
-                if shift in [-1, 1] and neib // m != num // m:
-                    continue
-                if visited[neib]:
-                    continue
-                visited[neib] = True
-                next_v += next_v == neib
-                if plate[neib // m][neib % m] == '#':
-                    d.append(neib)
+        size, next_v = process_neighbors(next_v, visited, shifts, nums, m, plate)
 
         max_size = max(size, max_size)
     return cnt, max_size
@@ -97,4 +106,3 @@ def main():
 
 if __name__ == '__main__':
     print(*main())
-
